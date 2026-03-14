@@ -1,36 +1,12 @@
 Install [gn-kernels](https://github.com/gau-nernst/gn-kernels). Example MLP (only a small speedup on sm_120: ~10% for the entire training loop, but loss degradation ~0.05 CE which is quite high).
 
 ```python
-"""
-FP8 Two-Layer MLP – Full Forward + Backward in Triton
-======================================================
-Computation graph:
-    Z  = X @ W1           (M×K) @ (K×N)  → (M×N)
-    S  = relu(Z)           stored as FP8-E4M3
-    A  = S²                (elementwise)
-    Y  = A @ W2           (M×N) @ (N×P)  → (M×P)
-
-Backward  (given dY):
-    dW2 = Aᵀ @ dY                     A recomputed on-the-fly as S²
-    dZ  = (dY @ W2ᵀ) ⊙ 2·S           fused single kernel → FP8
-                                       no S>0 gate: S = relu(Z) ≥ 0 by construction
-    dW1 = Xᵀ @ dZ
-    dX  = dZ  @ W1ᵀ
-
-X, W1, W2 are pre-cast to FP8-E4M3 once in forward() and the FP8 copies are
-saved for backward — no per-tile cast overhead inside any kernel loop.
-dY is the only FP16 operand cast on the fly (it is not pre-castable).
-All matmuls accumulate in FP16.  Fixed block sizes – no autotuning.
-dA is never materialised: the dY@W2ᵀ matmul and the ⊙2S epilogue are fused.
-"""
-
 import torch
 import triton
 import triton.language as tl
 import torch.nn as nn
 
-from dl_pro.float8utils import mxfp8_mm
-from dl_pro.float4utils import nvfp4mm, nvfp4mm_relu, nvfp4mm_relu_2
+from float4utils import nvfp4mm, nvfp4mm_relu, nvfp4mm_relu_2
 
 # =====================================================================
 # TRITON KERNEL: RMSNorm Backward
