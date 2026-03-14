@@ -1,4 +1,4 @@
-Install [gn-kernels](https://github.com/gau-nernst/gn-kernels), and replace `gn_kernels/csrc/sm120a/cutlass_mm_fp4.cu` with the version in this repo, then `cd ~/gn-kernels` and `pip install -e . --no-build-isolation`. Example NVFP4 MLP impl (~10% for the entire training loop, but mild loss degradation):
+Install [gn-kernels](https://github.com/gau-nernst/gn-kernels), and replace `gn_kernels/csrc/sm120a/cutlass_mm_fp4.cu` with the version in this repo, then `cd ~/gn-kernels` and `pip install -e . --no-build-isolation`. Example NVFP4 MLP impl (~10% e2e speed up for transformer training loop, mild loss degradation, memory optimized with built-in checkpointing --> **don't** wrap this implementation using `torch.utils.checkpoint.checkpoint` or it will run MUCH SLOWER with higher memory usage):
 
 ```python
 import torch
