@@ -1,4 +1,4 @@
-Install [gn-kernels](https://github.com/gau-nernst/gn-kernels). Example MLP (only a small speedup on sm_120: ~10% for the entire training loop, but loss degradation ~0.05 CE which is quite high).
+Install [gn-kernels](https://github.com/gau-nernst/gn-kernels), and replace `gn_kernels/csrc/sm120a/cutlass_mm_fp4.cu` with the version in this repo, then `cd ~/gn-kernels` and `pip install -e . --no-build-isolation`. Example NVFP4 MLP impl (~10% for the entire training loop, but mild loss degradation):
 
 ```python
 import torch
